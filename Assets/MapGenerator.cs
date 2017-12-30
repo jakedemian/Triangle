@@ -68,6 +68,11 @@ public class MapGenerator : MonoBehaviour
 		mesh.triangles = meshData.triangles;
 
 		mesh.RecalculateNormals();
+
+		gameObject.AddComponent<MeshCollider>();
+		MeshCollider meshCollider = gameObject.GetComponent<MeshCollider>();
+		meshCollider.sharedMesh = mesh;
+
     }
 
 	void OnValidate() {

@@ -3,14 +3,17 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public class PlayerController : MonoBehaviour {
-	private Camera cam;
+	Camera cam;
+	Rigidbody rb;
 
-	private const float TEMP__PLAYER_RAW_FORWARD_MOVE_SPEED = 10f;
-	private const float TEMP__PLAYER_RAW_BACKWARD_MOVE_SPEED = 5f;
+	const float PLAYER_RAW_FORWARD_MOVE_SPEED = 30f;
+	const float PLAYER_RAW_FORWARD_SPRINT_SPEED = 45f;
+	const float PLAYER_RAW_BACKWARD_MOVE_SPEED = 15f;
 
 	// Use this for initialization
 	void Start () {
 		cam = Camera.main;
+		rb = GetComponent<Rigidbody>();
 	}
 	
 	// Update is called once per frame
@@ -40,6 +43,21 @@ public class PlayerController : MonoBehaviour {
 		}
 
 		movementVector = horizontalVector + verticalVector;
-		transform.Translate(movementVector * Time.deltaTime * TEMP__PLAYER_RAW_FORWARD_MOVE_SPEED);
+		float currentMoveSpeed = 0f;
+		if(Input.GetAxisRaw("Vertical") == -1){
+			currentMoveSpeed = PLAYER_RAW_BACKWARD_MOVE_SPEED;
+		} else {
+			if(Input.GetButton("Sprint")){
+				currentMoveSpeed = PLAYER_RAW_FORWARD_SPRINT_SPEED;
+			} else {
+				currentMoveSpeed = PLAYER_RAW_FORWARD_MOVE_SPEED;
+			}
+		}
+
+		transform.Translate(movementVector * Time.deltaTime * currentMoveSpeed);
+
+		//rotate the player between these
+		rb.constraints = RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationZ;
+		rb.constraints = RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationY | RigidbodyConstraints.FreezeRotationZ;
 	}
 }
