@@ -46,6 +46,9 @@ public class PlayerController : MonoBehaviour {
 
 		movementVector = horizontalVector + verticalVector;
 
+		// normalize the final vector so that vertical camera angle doesn't affect speed
+		movementVector = movementVector.normalized; 
+
 		float currentMoveSpeed = 0f;
 		if(Input.GetAxisRaw("Vertical") == -1){
 			lookDirection = -movementVector;

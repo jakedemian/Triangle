@@ -237,13 +237,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   target: {fileID: 4340690077536646}
-  distance: 25.08
+  distance: 10
   xSpeed: 60
   ySpeed: 150
-  yMinLimit: -20
+  yMinLimit: 10
   yMaxLimit: 80
-  distanceMin: 0.5
-  distanceMax: 15
+  distanceMin: 3
+  distanceMax: 10
 --- !u!114 &114220179356761412
 MonoBehaviour:
   m_ObjectHideFlags: 1

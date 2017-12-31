@@ -32,20 +32,15 @@ public class CameraController : MonoBehaviour {
 		if (rigidbody != null){
 			rigidbody.freezeRotation = true;
 		}
-		handleCameraOrbit();
 	}
 
 	void LateUpdate () {
-		if (target && Input.GetMouseButton(1)) 
-		{
-			handleCameraOrbit();
+		if(Input.GetMouseButton(1)){
+			x += Input.GetAxis("Mouse X") * xSpeed * distance * 0.02f;
+			y -= Input.GetAxis("Mouse Y") * ySpeed * 0.02f;
 		}
-	}
-
-	private void handleCameraOrbit(){
-		x += Input.GetAxis("Mouse X") * xSpeed * distance * 0.02f;
-		y -= Input.GetAxis("Mouse Y") * ySpeed * 0.02f;
-
+		
+		// Does this need to be in if above?
 		y = ClampAngle(y, yMinLimit, yMaxLimit);
 
 		Quaternion rotation = Quaternion.Euler(y, x, 0);
