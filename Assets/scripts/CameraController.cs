@@ -1,51 +1,74 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
+using System.Collections;
 
+[AddComponentMenu("Camera-Control/Mouse Orbit with zoom")]
 public class CameraController : MonoBehaviour {
-	private GameObject player;
-	public bool invertHorizontal;
-	public bool invertVertical;
-	public float orbitSpeedFactor = 100f;
 
-	private Vector3 lastMousePosition;
+	public Transform target;
+	public float distance = 5.0f;
+	public float xSpeed = 120.0f;
+	public float ySpeed = 120.0f;
 
-	private Vector3 offset;
+	public float yMinLimit = -20f;
+	public float yMaxLimit = 80f;
+
+	public float distanceMin = .5f;
+	public float distanceMax = 15f;
+
+	private Rigidbody rigidbody;
+
+	float x = 0.0f;
+	float y = 0.0f;
 
 	// Use this for initialization
 	void Start () {
-		player = GameObject.FindWithTag("Player");
+		Vector3 angles = transform.eulerAngles;
+		x = angles.y;
+		y = angles.x;
 
+		rigidbody = GetComponent<Rigidbody>();
 
-	}
-	
-	// Update is called once per frame
-	void Update () {
-		transform.LookAt(player.transform);
-		if(Input.GetMouseButton(1)){
-			if(Input.GetAxis("Mouse X") != 0){
-				float orbitSpeed = orbitSpeedFactor * Input.GetAxis("Mouse X") * Time.deltaTime;
-				transform.RotateAround(player.transform.position, Vector3.up, orbitSpeed);
-			}
-			if(Input.GetAxis("Mouse Y") != 0 && cameraIsNotAtLimits()){
-				float orbitSpeed = orbitSpeedFactor * Input.GetAxis("Mouse Y") * Time.deltaTime;
-				transform.RotateAround(player.transform.position, Vector3.right, orbitSpeed * -1);
-
-				if(transform.position.y < player.transform.position.y){
-					transform.position = new Vector3(transform.position.x, player.transform.position.y, transform.position.z);
-				}
-			}
+		// Make the rigid body not change rotation
+		if (rigidbody != null){
+			rigidbody.freezeRotation = true;
 		}
-		lastMousePosition = Input.mousePosition;
+		handleCameraOrbit();
+	}
 
-		if(Input.GetAxis("Mouse ScrollWheel") != 0){
-			GetComponent<Camera>().fieldOfView -= Input.GetAxis("Mouse ScrollWheel") * Time.deltaTime * 1000f;
+	void LateUpdate () {
+		if (target && Input.GetMouseButton(1)) 
+		{
+			handleCameraOrbit();
 		}
 	}
 
-	private bool cameraIsNotAtLimits(){
-		bool lowerLimitCheck = Input.GetAxis("Mouse Y") < 0 || transform.position.y > player.transform.position.y;
-		bool upperLimitCheck = Input.GetAxis("Mouse Y") > 0 || Mathf.Abs(Vector3.Angle(transform.forward, -Vector3.up)) > 10f;
-		return lowerLimitCheck && upperLimitCheck;
+	private void handleCameraOrbit(){
+		x += Input.GetAxis("Mouse X") * xSpeed * distance * 0.02f;
+		y -= Input.GetAxis("Mouse Y") * ySpeed * 0.02f;
+
+		y = ClampAngle(y, yMinLimit, yMaxLimit);
+
+		Quaternion rotation = Quaternion.Euler(y, x, 0);
+
+		distance = Mathf.Clamp(distance - Input.GetAxis("Mouse ScrollWheel")*5, distanceMin, distanceMax);
+
+		RaycastHit hit;
+		if (Physics.Linecast (target.position, transform.position, out hit)) 
+		{
+		distance -=  hit.distance;
+		}
+		Vector3 negDistance = new Vector3(0.0f, 0.0f, -distance);
+		Vector3 position = rotation * negDistance + target.position;
+
+		transform.rotation = rotation;
+		transform.position = position;
+	}
+
+	public static float ClampAngle(float angle, float min, float max){
+		if (angle < -360F)
+			angle += 360F;
+		if (angle > 360F)
+			angle -= 360F;
+		return Mathf.Clamp(angle, min, max);
 	}
 }
