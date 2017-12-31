@@ -6,9 +6,10 @@ public class PlayerController : MonoBehaviour {
 	Camera cam;
 	Rigidbody rb;
 
-	const float PLAYER_RAW_FORWARD_MOVE_SPEED = 10f;
-	const float PLAYER_RAW_FORWARD_SPRINT_SPEED = 16f;
+	const float PLAYER_RAW_FORWARD_MOVE_SPEED = 5f;
+	const float PLAYER_RAW_FORWARD_SPRINT_SPEED = 10f;
 	const float PLAYER_RAW_BACKWARD_MOVE_SPEED = 3f;
+	const float PLAYER_RAW_FORWARD_SNEAK_SPEED = 1.5f;
 
 	private Vector3 lookDirection;
 
@@ -57,6 +58,8 @@ public class PlayerController : MonoBehaviour {
 			lookDirection = movementVector;
 			if(Input.GetButton("Sprint")){
 				currentMoveSpeed = PLAYER_RAW_FORWARD_SPRINT_SPEED;
+			} else if(Input.GetButton("Sneak")){
+				currentMoveSpeed = PLAYER_RAW_FORWARD_SNEAK_SPEED;
 			} else {
 				currentMoveSpeed = PLAYER_RAW_FORWARD_MOVE_SPEED;
 			}
