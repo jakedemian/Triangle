@@ -6,9 +6,9 @@ public class PlayerController : MonoBehaviour {
 	Camera cam;
 	Rigidbody rb;
 
-	const float PLAYER_RAW_FORWARD_MOVE_SPEED = 30f;
-	const float PLAYER_RAW_FORWARD_SPRINT_SPEED = 45f;
-	const float PLAYER_RAW_BACKWARD_MOVE_SPEED = 15f;
+	const float PLAYER_RAW_FORWARD_MOVE_SPEED = 20f;
+	const float PLAYER_RAW_FORWARD_SPRINT_SPEED = 30f;
+	const float PLAYER_RAW_BACKWARD_MOVE_SPEED = 7f;
 
 	// Use this for initialization
 	void Start () {
