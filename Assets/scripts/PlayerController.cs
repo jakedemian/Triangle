@@ -6,9 +6,11 @@ public class PlayerController : MonoBehaviour {
 	Camera cam;
 	Rigidbody rb;
 
-	const float PLAYER_RAW_FORWARD_MOVE_SPEED = 20f;
-	const float PLAYER_RAW_FORWARD_SPRINT_SPEED = 30f;
-	const float PLAYER_RAW_BACKWARD_MOVE_SPEED = 7f;
+	const float PLAYER_RAW_FORWARD_MOVE_SPEED = 10f;
+	const float PLAYER_RAW_FORWARD_SPRINT_SPEED = 16f;
+	const float PLAYER_RAW_BACKWARD_MOVE_SPEED = 3f;
+
+	private Vector3 lookDirection;
 
 	// Use this for initialization
 	void Start () {
@@ -20,7 +22,7 @@ public class PlayerController : MonoBehaviour {
 	void Update () {
 		Vector3 camForward = cam.transform.forward.normalized;
 		Vector3 camRight = cam.transform.right.normalized;
-
+		
 		Vector3 verticalVector = Vector3.zero;
 		Vector3 horizontalVector = Vector3.zero;
 		Vector3 movementVector = Vector3.zero;
@@ -43,10 +45,13 @@ public class PlayerController : MonoBehaviour {
 		}
 
 		movementVector = horizontalVector + verticalVector;
+
 		float currentMoveSpeed = 0f;
 		if(Input.GetAxisRaw("Vertical") == -1){
+			lookDirection = -movementVector;
 			currentMoveSpeed = PLAYER_RAW_BACKWARD_MOVE_SPEED;
 		} else {
+			lookDirection = movementVector;
 			if(Input.GetButton("Sprint")){
 				currentMoveSpeed = PLAYER_RAW_FORWARD_SPRINT_SPEED;
 			} else {
@@ -55,9 +60,10 @@ public class PlayerController : MonoBehaviour {
 		}
 
 		transform.Translate(movementVector * Time.deltaTime * currentMoveSpeed);
+		
+	}
 
-		//rotate the player between these
-		rb.constraints = RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationZ;
-		rb.constraints = RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationY | RigidbodyConstraints.FreezeRotationZ;
+	public Vector3 GetLookDirection(){
+		return lookDirection;
 	}
 }
