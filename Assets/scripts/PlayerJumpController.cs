@@ -3,50 +3,35 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public class PlayerJumpController : MonoBehaviour {
-	public float jumpSpeed = 5f;
 
+	public float downAccel = 7.75f;
+	public float jumpVel = 3;
+	public float distToGround = 0.5f;
+	public LayerMask groundMask;
+	public string JUMP_AXIS = "Jump";
 	Rigidbody rb;
-	bool grounded;
+
 	void Start(){
 		rb = GetComponent<Rigidbody>();
+	}
 
-		grounded = true;
-		clampToGround();
+	bool Grounded(){
+		bool res = Physics.Raycast(transform.position, -Vector3.up, GetComponent<Collider>().bounds.extents.y, groundMask);
+		if(res){
+			rb.velocity = new Vector3(rb.velocity.x, 0, rb.velocity.z);
+		}
+		return res;
 	}
 
 	void Update () {
-		if(Input.GetButtonDown("Jump") && grounded){
-			grounded = false;
-			rb.velocity += Vector3.up * jumpSpeed;
+		if(Input.GetAxisRaw(JUMP_AXIS) != 0 && Grounded()){
+			Jump();
 		}
 
-		if(isOnOrBelowGround()){
-			grounded = true;
-		}
-
-		// if(grounded){
-		// 	clampToGround();
-		// }
+		rb.AddForce(-Vector3.up * downAccel);
 	}
 
-	bool isOnOrBelowGround(){
-		RaycastHit hit;
-		bool isOnOrBelowGround = false;
-		if(Physics.Raycast(transform.position, -Vector3.up, out hit)){
-			float distanceToGround = hit.distance;
-			if(distanceToGround <= GetComponent<Collider>().bounds.extents.y){
-				isOnOrBelowGround = true;
-			}
-		}
-
-		return isOnOrBelowGround;
-	}
-
-	void clampToGround(){
-		RaycastHit hit;
-		if(Physics.Raycast(transform.position, -Vector3.up, out hit)){
-			float distanceToGround = hit.distance;
-			transform.position = new Vector3(transform.position.x, transform.position.y - distanceToGround + GetComponent<Collider>().bounds.extents.y , transform.position.z);
-		}
+	void Jump(){
+		rb.velocity = new Vector3(rb.velocity.x, jumpVel, rb.velocity.z);
 	}
 }
