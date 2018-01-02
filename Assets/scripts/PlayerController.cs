@@ -3,73 +3,83 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public class PlayerController : MonoBehaviour {
-	Camera cam;
-	Rigidbody rb;
+	public float walkSpeed = 2;
+	public float runSpeed = 6;
+	public float turnSmoothTime = 0.2f;
+	public float speedSmoothTime = 0.1f;
+	public float jumpHeight = 1;
+	[Range(0,1)]
+	public float airControlPercent;
 
-	const float PLAYER_RAW_FORWARD_MOVE_SPEED = 5f;
-	const float PLAYER_RAW_FORWARD_SPRINT_SPEED = 10f;
-	const float PLAYER_RAW_BACKWARD_MOVE_SPEED = 3f;
-	const float PLAYER_RAW_FORWARD_SNEAK_SPEED = 1.5f;
+	float turnSmoothVelocity;
+	float speedSmoothVelocity;
+	float currentSpeed;
+	Animator animator;
+	public float gravity = -12f;
+	float velocityY; // current y velocity
 
-	private Vector3 lookDirection;
+	Transform cameraT;
+	CharacterController controller;
 
-	// Use this for initialization
 	void Start () {
-		cam = Camera.main;
-		rb = GetComponent<Rigidbody>();
+		animator = GetComponent<Animator>();
+		cameraT = Camera.main.transform;
+		controller = GetComponent<CharacterController>();
 	}
 	
-	// Update is called once per frame
 	void Update () {
-		Vector3 camForward = cam.transform.forward.normalized;
-		Vector3 camRight = cam.transform.right.normalized;
-		
-		Vector3 verticalVector = Vector3.zero;
-		Vector3 horizontalVector = Vector3.zero;
-		Vector3 movementVector = Vector3.zero;
+		//input 
+		Vector2 input = new Vector2(Input.GetAxisRaw("Horizontal"), Input.GetAxisRaw("Vertical"));
+		Vector2 inputDir = input.normalized;
+		bool running = Input.GetKey(KeyCode.LeftShift);
 
-		if(Input.GetAxisRaw("Vertical") == 1){
-			verticalVector = new Vector3(camForward.x, 0, camForward.z);
-		} else if(Input.GetAxisRaw("Vertical") == -1){
-			verticalVector = new Vector3(camForward.x, 0, camForward.z) * -1;
+		Move(inputDir, running);
+		if(Input.GetKeyDown(KeyCode.Space)){
+			Jump();
 		}
 
-		if(Input.GetAxisRaw("Horizontal") == 1){
-			horizontalVector = new Vector3(camRight.x, 0, camRight.z);
-		} else if(Input.GetAxisRaw("Horizontal") == -1){
-			horizontalVector = new Vector3(camRight.x, 0, camRight.z) * -1;
+		// animation control
+		float animationSpeedPercent = ((running) ? currentSpeed/runSpeed : currentSpeed/walkSpeed * 0.5f);
+		animator.SetFloat("speedPercent", animationSpeedPercent, speedSmoothTime, Time.deltaTime);
+	}
+
+	void Move(Vector2 inputDir, bool running){
+		if(inputDir != Vector2.zero){
+			float targetRotation = Mathf.Atan2(inputDir.x, inputDir.y) * Mathf.Rad2Deg + cameraT.eulerAngles.y;
+			transform.eulerAngles = Vector3.up * Mathf.SmoothDampAngle(transform.eulerAngles.y, targetRotation, ref turnSmoothVelocity, GetModifiedSmoothTime(turnSmoothTime));
 		}
 
-		if(Input.GetAxisRaw("Horizontal") != 0 && Input.GetAxisRaw("Vertical") != 0){
-			horizontalVector /= Mathf.Sqrt(2f);
-			verticalVector /= Mathf.Sqrt(2f);
+		float targetSpeed = ((running) ? runSpeed : walkSpeed) * inputDir.magnitude;
+		currentSpeed = Mathf.SmoothDamp(currentSpeed, targetSpeed, ref speedSmoothVelocity, GetModifiedSmoothTime(speedSmoothTime));
+
+		velocityY += Time.deltaTime * gravity;
+
+		Vector3 velocity = (transform.forward * currentSpeed) + (Vector3.up * velocityY);
+		controller.Move(velocity * Time.deltaTime);
+		currentSpeed = new Vector2(controller.velocity.x, controller.velocity.z).magnitude;
+
+		if(controller.isGrounded){
+			velocityY = 0;
 		}
 
-		movementVector = horizontalVector + verticalVector;
-
-		// normalize the final vector so that vertical camera angle doesn't affect speed
-		movementVector = movementVector.normalized; 
-
-		float currentMoveSpeed = 0f;
-		if(Input.GetAxisRaw("Vertical") == -1){
-			lookDirection = -movementVector;
-			currentMoveSpeed = PLAYER_RAW_BACKWARD_MOVE_SPEED;
-		} else {
-			lookDirection = movementVector;
-			if(Input.GetButton("Sprint")){
-				currentMoveSpeed = PLAYER_RAW_FORWARD_SPRINT_SPEED;
-			} else if(Input.GetButton("Sneak")){
-				currentMoveSpeed = PLAYER_RAW_FORWARD_SNEAK_SPEED;
-			} else {
-				currentMoveSpeed = PLAYER_RAW_FORWARD_MOVE_SPEED;
-			}
-		}
-
-		transform.Translate(movementVector * Time.deltaTime * currentMoveSpeed);
 		
 	}
 
-	public Vector3 GetLookDirection(){
-		return lookDirection;
+	void Jump(){
+		if(controller.isGrounded){
+			float jumpVelocity = Mathf.Sqrt(-2*gravity*jumpHeight);
+			velocityY = jumpVelocity;
+		}
+	}
+
+	float GetModifiedSmoothTime(float smoothTime){
+		if(controller.isGrounded){
+			return smoothTime;
+		}
+		if(airControlPercent == 0){
+			return float.MaxValue;
+		}
+		return smoothTime / airControlPercent;
 	}
 }
+ 

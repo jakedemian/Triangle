@@ -238,7 +238,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   target: {fileID: 4340690077536646}
   distance: 10
-  xSpeed: 60
+  xSpeed: 18
   ySpeed: 150
   yMinLimit: 10
   yMaxLimit: 80
@@ -281,7 +281,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   downAccel: 10
   jumpVel: 7
-  distToGround: 0.5
+  distToGround: 0.5001
   groundMask:
     serializedVersion: 2
     m_Bits: 256
